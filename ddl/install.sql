@@ -11,3 +11,4 @@ CREATE TRANSFORM FUNCTION generate_series AS LANGUAGE 'C++' Name 'TimestampSerie
 CREATE TRANSFORM FUNCTION generate_series AS LANGUAGE 'C++' Name 'TimestampSeriesWithStepFactory' LIBRARY GenerateSeriesLib NOT FENCED;
 CREATE TRANSFORM FUNCTION generate_series AS LANGUAGE 'C++' Name 'TimestampTzSeriesFactory' LIBRARY GenerateSeriesLib NOT FENCED;
 CREATE TRANSFORM FUNCTION generate_series AS LANGUAGE 'C++' Name 'TimestampTzSeriesWithStepFactory' LIBRARY GenerateSeriesLib NOT FENCED;
+CREATE TRANSFORM FUNCTION generate_series AS LANGUAGE 'C++' Name 'TimestampSeriesWithStepIntervalYMFactory' LIBRARY GenerateSeriesLib NOT FENCED;

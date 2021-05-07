@@ -1,4 +1,6 @@
 #include <Vertica.h>
+#include "TimestampPlusInterval.h"
+
 using Vertica::TransformFunction;
 using Vertica::TransformFunctionFactory;
 
@@ -42,7 +44,7 @@ public:
 					end = D::getBound(argReader, 1);
 				}
 
-				T step;
+				S step;
 				if (numCols == 3) {
 					if (argReader.isNull(2)) {
 						continue;
@@ -53,9 +55,10 @@ public:
 					step = D::defaultStep();
 				}
 
-				for (T i = start; i <= end; i += step) {
+				for (T i = start; i <= end;) {
 					D::setRes(resWriter, i);
 					resWriter.next();
+					i = D::getNext(i, step);
 				}
 			} while (argReader.next());
 		} catch (std::exception &exception) {
@@ -88,6 +91,11 @@ public:
 	{
 		return resWriter.setInt(0, value);
 	}
+
+	inline static Vertica::vint getNext(Vertica::vint current, Vertica::vint step)
+	{
+		return current + step;
+	}
 };
 
 class FloatSeries: public AbstractSeries<FloatSeries, Vertica::vfloat, Vertica::vfloat> {
@@ -112,6 +120,11 @@ public:
 	                   const Vertica::vfloat &value)
 	{
 		return resWriter.setFloat(0, value);
+	}
+
+	inline static Vertica::vfloat getNext(Vertica::vfloat current, Vertica::vfloat step)
+	{
+		return current + step;
 	}
 };
 
@@ -139,6 +152,12 @@ public:
 	{
 		return resWriter.setTimestamp(0, value);
 	}
+
+	inline static Vertica::Timestamp getNext(Vertica::Timestamp current, Vertica::Interval step)
+	{
+		return current + step;
+	}
+
 };
 
 class TimestampTzSeries : public AbstractSeries<TimestampTzSeries, Vertica::TimestampTz, Vertica::Interval> {
@@ -165,6 +184,12 @@ public:
 	{
 		return resWriter.setTimestampTz(0, value);
 	}
+
+	inline static Vertica::TimestampTz getNext(Vertica::TimestampTz current, Vertica::Interval step)
+	{
+		return current + step;
+	}
+
 };
 
 
@@ -306,6 +331,60 @@ class TimestampTzSeriesWithStepFactory : public TimestampTzSeriesFactory {
 		argTypes.addInterval();
 	}
 };
+
+namespace Vertica {
+
+class TimestampSeriesIntervalYM : public AbstractSeries<TimestampSeriesIntervalYM, Timestamp, IntervalYM> {
+public:
+
+	static Timestamp getBound(const PartitionReader &argReader, size_t col)
+	{
+		return argReader.getTimestampRef(col);
+	}
+
+	static IntervalYM getStep(const PartitionReader &argReader, size_t col)
+	{
+		return argReader.getIntervalYMRef(col);
+	}
+
+	static IntervalYM defaultStep()
+	{
+		return 1LL;
+	}
+
+	static void setRes(PartitionWriter &resWriter, const Timestamp &value)
+	{
+		return resWriter.setTimestamp(0, value);
+	}
+
+	inline static Timestamp getNext(Timestamp current, IntervalYM step)
+	{
+		return timestamp_pl_intervalym(current, step);
+	}
+
+};
+
+class TimestampSeriesWithStepIntervalYMFactory : public AbstractSeriesFactory<TimestampSeriesIntervalYM> {
+public:
+
+	virtual void getPrototype(ServerInterface &, ColumnTypes &argTypes, ColumnTypes &resTypes)
+	{
+		argTypes.addTimestamp();
+		argTypes.addTimestamp();
+		argTypes.addIntervalYM();
+		resTypes.addTimestamp();
+	}
+
+	virtual void getReturnType(ServerInterface &svc, const SizedColumnTypes &argTypes, SizedColumnTypes &resTypes)
+	{
+		const VerticaType &opType = argTypes.getColumnType(0);
+		resTypes.addTimestamp(opType.getTimestampPrecision(), RESULT_COLUMN_NAME);
+	}
+};
+
+RegisterFactory(TimestampSeriesWithStepIntervalYMFactory);
+
+}
 
 
 RegisterFactory(IntSeriesFactory);
