@@ -34,6 +34,50 @@ You can also specify a step value using a third optional argument:
 The function works with integers, floats and timestamps (with and without
 time zones). Refer to the `examples` directory to see more usage samples.
 
+For Interval type step, this function just add it, there is **NO** any adjustment.
+
+```
+dbadmin=> select generate_series('2020-01-01'::timestamp, '2021-01-01'::timestamp, '1 month'::interval) over();
+   generate_series
+---------------------
+ 2020-01-01 00:00:00
+ 2020-01-31 00:00:00
+ 2020-03-01 00:00:00
+ 2020-03-31 00:00:00
+ 2020-04-30 00:00:00
+ 2020-05-30 00:00:00
+ 2020-06-29 00:00:00
+ 2020-07-29 00:00:00
+ 2020-08-28 00:00:00
+ 2020-09-27 00:00:00
+ 2020-10-27 00:00:00
+ 2020-11-26 00:00:00
+ 2020-12-26 00:00:00
+(13 rows)
+```SQL
+
+For IntervalYM type step, it will adjust month and year after addition similar as PostgreSQL.
+
+```SQL
+dbadmin=> select generate_series('2020-01-01'::timestamp, '2021-01-01'::timestamp, '1 month'::intervalYM) over();
+   generate_series
+---------------------
+ 2020-01-01 00:00:00
+ 2020-02-01 00:00:00
+ 2020-03-01 00:00:00
+ 2020-04-01 00:00:00
+ 2020-05-01 00:00:00
+ 2020-06-01 00:00:00
+ 2020-07-01 00:00:00
+ 2020-08-01 00:00:00
+ 2020-09-01 00:00:00
+ 2020-10-01 00:00:00
+ 2020-11-01 00:00:00
+ 2020-12-01 00:00:00
+ 2021-01-01 00:00:00
+(13 rows)
+```
+
 
 Building
 --------
