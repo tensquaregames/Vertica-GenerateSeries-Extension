@@ -1,5 +1,6 @@
 CXX=g++
-CXXFLAGS=-std=c++11 -Wall -Wextra -pedantic -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
+#CXXFLAGS=-std=c++11 -Wall -Wextra -pedantic -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
+CXXFLAGS=-std=c++11 -w -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
 LDFLAGS=-shared
 
 ifdef DEBUG
