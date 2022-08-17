@@ -18,7 +18,7 @@ VERTICA_SDK_INCLUDE=$(SDK)/include
 INCLUDE=include/
 
 
-.PHONY: build install uninstall examples clean
+.PHONY: build install grant_permissions uninstall examples clean
 
 
 # Auxiliary tasks.
@@ -26,6 +26,9 @@ INCLUDE=include/
 build: lib/GenerateSeriesLib.so
 
 install: ddl/install.sql build
+	$(VSQL) -f $<
+
+grant_permissions: ddl/grant_permissions.sql
 	$(VSQL) -f $<
 
 uninstall: ddl/uninstall.sql
